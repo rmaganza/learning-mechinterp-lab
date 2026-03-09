@@ -1,0 +1,18 @@
+# Config for Meng et al. causal tracing reproduction (noise corruption)
+# Same prompt for clean/corrupted; corruption via Gaussian noise on subject embeddings
+model:
+  name: gpt2-small
+  layer_indices: null
+  device: auto
+
+patching:
+  activation_type: resid_pre
+  corruption_method: noise  # Meng et al.: Gaussian noise on subject
+  subject: France
+  noise_scale: 10.0  # Stronger corruption (default 3); GPT-2 needs more to flip prediction
+
+prompts:
+  activation_patching:
+    clean: "The capital of France is"
+    corrupted: "The capital of France is"  # Same; corruption is via noise
+    target_token: " Paris"

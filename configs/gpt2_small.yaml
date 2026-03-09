@@ -1,0 +1,32 @@
+# Config for GPT-2 Small
+model:
+  name: gpt2-small
+  layer_indices: null  # null = all layers
+  device: auto
+
+patching:
+  activation_type: resid_pre  # resid_pre = layer-level, attn_out = head-level
+  # Meng et al. reproduction: use noise corruption instead of prompt swap
+  corruption_method: prompt_swap  # prompt_swap (default) | noise (Meng et al.)
+  subject: France  # For noise: subject token to corrupt
+
+prompts:
+  # Induction heads: [A][B]...[A] -> [B] pattern (Olsson et al.)
+  induction_heads: "The cat sat on the mat. The cat sat on the"
+  # Copying heads (previous-token attention)
+  copying: "The quick brown fox jumps over the lazy dog."
+  # Logit lens: when does target token appear in residual stream?
+  logit_lens: "The capital of France is"
+  logit_lens_target: " Paris"  # null = track model's top (Section 2); " Paris" = factual (Section 7)
+  activation_patching:
+    clean: "The capital of France is"
+    corrupted: "The capital of Germany is"
+    target_token: " Paris"
+  multi_fact_patching:
+    - ["The capital of France is", "The capital of Germany is", " Paris"]
+    - ["The capital of England is", "The capital of France is", " London"]
+    - ["The capital of Italy is", "The capital of Spain is", " Rome"]
+  neuron_analysis:
+    - "Hello world."
+    - "The cat sat on the mat."
+    - "Machine learning is fascinating."

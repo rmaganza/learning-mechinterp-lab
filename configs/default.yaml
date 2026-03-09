@@ -1,0 +1,48 @@
+# Default config for mechanistic interpretability experiments
+
+model:
+  name: gpt2
+  device: auto  # cuda, cpu, or auto
+
+prompts:
+  copying: "The quick brown fox jumps over the lazy dog."
+  induction_heads: "The cat sat on the mat. The cat sat on the"
+  logit_lens: "The capital of France is"
+  logit_lens_target: " Paris"
+  activation_patching:
+    clean: "The capital of France is"
+    corrupted: "The capital of Germany is"
+    target_token: " Paris"
+  multi_fact_patching:
+    - ["The capital of France is", "The capital of Germany is", " Paris"]
+    - ["The capital of England is", "The capital of France is", " London"]
+    - ["The capital of Italy is", "The capital of Spain is", " Rome"]
+  neuron_analysis:
+    - "Hello world."
+    - "The cat sat on the mat."
+
+hooks:
+  targets:
+    - resid_pre
+    - resid_post
+    - attn_out
+    - mlp_out
+  layers: null  # null = all layers
+
+patching:
+  activation_type: attn_out  # resid_pre = layer-level, attn_out = head-level
+  activation_types:
+    - resid_pre
+    - attn_out
+    - mlp_out
+
+probes:
+  logit_lens:
+    layers: null
+    position: -1
+
+analysis:
+  attention:
+    layers: null
+  mlp:
+    top_k_neurons: 10

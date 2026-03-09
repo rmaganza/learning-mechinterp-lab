@@ -1,0 +1,9 @@
+# Config for standard logit lens (Nostalgebraist) - track model's top prediction
+model:
+  name: gpt2-small
+  layer_indices: null
+  device: auto
+
+prompts:
+  logit_lens: "The capital of France is"
+  logit_lens_target: null  # null = model's top (Section 2); " Paris" = factual (Section 7)

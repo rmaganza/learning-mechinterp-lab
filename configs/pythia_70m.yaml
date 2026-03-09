@@ -1,0 +1,15 @@
+# Config for Pythia-70M
+model:
+  name: EleutherAI/pythia-70m
+  layer_indices: null
+  device: auto
+
+prompts:
+  copying: "The quick brown fox jumps over the lazy dog."
+  logit_lens: "The capital of France is"
+  activation_patching:
+    clean: "The capital of France is"
+    corrupted: "The capital of Germany is"
+  neuron_analysis:
+    - "Hello world."
+    - "The cat sat on the mat."

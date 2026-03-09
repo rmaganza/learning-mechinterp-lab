@@ -1,0 +1,15 @@
+# Config for Meng et al. MLP-level causal tracing (reproduces middle-layer MLP finding)
+model:
+  name: gpt2-small
+  layer_indices: null
+  device: auto
+
+patching:
+  activation_type: mlp_out  # Meng et al.: localize to MLP modules
+  corruption_method: prompt_swap
+
+prompts:
+  activation_patching:
+    clean: "The capital of France is"
+    corrupted: "The capital of Germany is"
+    target_token: " Paris"
