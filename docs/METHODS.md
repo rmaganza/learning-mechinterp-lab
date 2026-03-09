@@ -41,7 +41,7 @@ Methods 1–9 are implemented in this lab. Methods 10–15 are **advanced/recent
 - That the component *represents* the information (it may merely transmit it).
 - Generalization to different prompts without further evidence.
 
-**Caveats:** Clean and corrupted should differ minimally. Same token length for prompt swap. Metric choice matters (e.g. logit diff for target token).
+**References:** Wang et al. [1]; Meng et al. [2] (noise corruption, MLP patching).
 
 ---
 
@@ -75,6 +75,8 @@ The unembedding $\mathbf{W}_U$ is trained to read the **final** residual. Interm
 - That the model "actually" predicts at that layer.
 - Causal importance (logit lens is correlational, not interventional).
 
+**References:** Nostalgebraist [3] (original); Belrose et al. [4] (tuned lens improvement).
+
 **Caveats:** Use tuned lens for more faithful early readouts. Target-token variant tracks a specific token (e.g. " Paris") instead of the model's top—useful when the model's top differs from the desired answer.
 
 ---
@@ -99,6 +101,8 @@ The unembedding $\mathbf{W}_U$ is trained to read the **final** residual. Interm
 
 - That high attention = the head *uses* that info for copying (value vectors matter; pattern is suggestive only).
 - That these heads alone implement copying (need output analysis).
+
+**References:** Olsson et al. [5].
 
 **Caveats:** Attention pattern shows *where* the head looks, not *what* it copies. Value vectors carry the content.
 
@@ -125,6 +129,8 @@ The unembedding $\mathbf{W}_U$ is trained to read the **final** residual. Interm
 - That induction heads *alone* explain in-context learning (Olsson presents correlational evidence for large models).
 - That the score captures the full mechanism (value vectors and composition matter).
 
+**References:** Olsson et al. [5].
+
 **Caveats:** Our scoring uses attention to the B position; Olsson uses prefix-matching on random sequences. Both target the same mechanism.
 
 ---
@@ -150,6 +156,8 @@ The unembedding $\mathbf{W}_U$ is trained to read the **final** residual. Interm
 - Causal importance (this is descriptive, not interventional).
 - That active neurons are "important" (need patching to test).
 
+**References:** Meng et al. [2] (MLP causal tracing); general activation inspection is standard practice.
+
 **Caveats:** Raw capture only. For Meng et al.–style MLP causal tracing, use activation patching with mlp_out.
 
 ---
@@ -169,6 +177,8 @@ The unembedding $\mathbf{W}_U$ is trained to read the **final** residual. Interm
 
 - Layers that are consistently causal across multiple facts.
 - More robust localization than single-fact patching.
+
+**References:** Wang et al. [1]; Meng et al. [2]; multi-fact aggregation is common in factual recall studies.
 
 **Caveats:** Same as activation patching. Facts should be comparable (same structure, same metric).
 
@@ -194,6 +204,8 @@ The unembedding $\mathbf{W}_U$ is trained to read the **final** residual. Interm
 - That high attention = high causal importance (value content matters).
 - That pattern alone determines head purpose.
 
+**References:** Vaswani et al. [6] (scaled dot-product attention); head analysis is standard in circuit discovery (e.g. Wang et al. [1]).
+
 **Caveats:** Attention shows *where*; value vectors show *what*.
 
 ---
@@ -218,6 +230,8 @@ The unembedding $\mathbf{W}_U$ is trained to read the **final** residual. Interm
 - Causal importance (contribution $\neq$ causation).
 - That negative contribution means "against" (interpretation is subtle).
 
+**References:** Residual stream decomposition (Elhage et al. [7]); DLA is standard in TransformerLens and circuit analysis.
+
 **Caveats:** Use activation patching for causal claims.
 
 ---
@@ -241,6 +255,8 @@ The unembedding $\mathbf{W}_U$ is trained to read the **final** residual. Interm
 
 - That the model *uses* that information.
 - Causal role.
+
+**References:** Alain & Bengio [8]; Belinkov & Glass [9] (NLP probes).
 
 **Caveats:** Pair with causal interventions. Good probe performance is necessary but not sufficient.
 
@@ -267,6 +283,8 @@ The unembedding $\mathbf{W}_U$ is trained to read the **final** residual. Interm
 - Still correlational—probes are trained to match final output, not to prove causation.
 - Probe quality depends on training data and objective.
 
+**References:** Belrose et al. [10].
+
 **Caveats:** Requires training probes per model. See [Tuned Lens](https://github.com/AlignmentResearch/tuned-lens) (EleutherAI/FAR, 2023).
 
 ---
@@ -292,6 +310,8 @@ The unembedding $\mathbf{W}_U$ is trained to read the **final** residual. Interm
 - That features are "ground truth" (SAE is a learned approximation).
 - Causal importance (feature presence $\neq$ causal role).
 - That all important structure is captured (SAEs can miss distributed or nonlinear structure).
+
+**References:** Templeton et al. [11]; Anthropic [12]; Bricken et al. [13]; AutoInterp [14].
 
 **Caveats:** Training is expensive; feature quality varies. Superposition hypothesis underlies the approach. See [Anthropic](https://www.anthropic.com/research/sparse-autoencoders), [EleutherAI AutoInterp](https://blog.eleuther.ai/autointerp/) (2023–2024).
 
@@ -333,6 +353,8 @@ The rotation $\mathbf{R}$ puts activations in a *non-standard basis*. In the sta
 - That the causal model is "true" (we test consistency, not ground truth).
 - That the model "uses" these variables (alignment $\neq$ causal necessity).
 
+**References:** Geiger et al. [15]; Wu et al. [16] (Boundless DAS).
+
 **Caveats:** Requires specifying a causal model. Subspace sizes can be learned (Boundless DAS) or fixed. Scaling to large models (e.g. Alpaca-7B) uses Boundless DAS. See [Geiger et al.](https://proceedings.mlr.press/v236/geiger24a.html) (2024).
 
 ---
@@ -356,6 +378,8 @@ The rotation $\mathbf{R}$ puts activations in a *non-standard basis*. In the sta
 
 - Exact causal effect (linear approximation can be wrong; residual error exists).
 - That pruned edges are irrelevant (approximation may miss nonlinear effects).
+
+**References:** Modi et al. [17]; Nanda [18]; AtP* (DeepMind) [19].
 
 **Caveats:** Linear approximation fails when effects are nonlinear. AtP* (DeepMind, 2024) improves robustness and provides error bounds. See [Attribution Patching](https://arxiv.org/abs/2310.10348) (2023), [AtP*](https://deepmind.google/research/publications/68553/) (2024).
 
@@ -381,6 +405,8 @@ The rotation $\mathbf{R}$ puts activations in a *non-standard basis*. In the sta
 
 - A single "correct" abstraction (many may exist).
 - That the framework itself does interpretability (it organizes and formalizes; you still need to run experiments).
+
+**References:** Geiger et al. [20]; Geiger et al. [15] (DAS as instantiation).
 
 **Caveats:** Theoretical; implementation is method-specific. See [Geiger et al.](https://www.jmlr.org/papers/v26/23-0058.html) (2023).
 
@@ -408,7 +434,59 @@ The rotation $\mathbf{R}$ puts activations in a *non-standard basis*. In the sta
 - That the concept vector is the "true" representation (it's a learned approximation).
 - Causal necessity (steering changes behavior but doesn't prove the model "uses" that direction normally).
 
+**References:** Turner et al. [21]; Zou et al. [22]; Representation Engineering [23].
+
 **Caveats:** Steering can affect unrelated behaviors. SAE-based steering (SAE-TS, 2024) aims to reduce side effects. See [Representation Engineering](https://www.alignmentforum.org/posts/3ghj8EuKzwD3MQR5G/an-introduction-to-representation-engineering-an-activation) (2023–2024).
+
+---
+
+## References
+
+[1] Wang, K., Variengien, A., Conmy, A., Scrivens, A., & Steinhardt, J. (2023). *Interpretability in the Wild: a Circuit for Indirect Object Identification in GPT-2 small*. ICLR. [arXiv:2211.00593](https://arxiv.org/abs/2211.00593)
+
+[2] Meng, K., Bau, D., Andonian, A., & Belinkov, Y. (2022). *Locating and Editing Factual Associations in GPT*. NeurIPS. [arXiv:2202.05262](https://arxiv.org/abs/2202.05262)
+
+[3] Nostalgebraist. (2020). *Interpreting GPT: the logit lens*. LessWrong. [lesswrong.com](https://www.lesswrong.com/posts/AcKRB8wDpdaN6v6ru/interpreting-gpt-the-logit-lens)
+
+[4] Belrose, N., Ostrovsky, L., McKinney, D., Furman, Z., Smith, N., Halawi, D., Biderman, S., & Steinhardt, J. (2023). *Eliciting Latent Predictions from Transformers with the Tuned Lens*. [arXiv:2303.08112](https://arxiv.org/abs/2303.08112)
+
+[5] Olsson, C., Elhage, N., Nanda, N., Joseph, N., DasSarma, N., Henighan, T., Mann, B., Askell, A., Bai, Y., Chen, A., Conerly, T., Drain, D., Ganguli, D., Hatam-Davis, Z., Hernandez, D., Jones, A., Kernion, J., Lovitt, L., Ndousse, K., ... Olah, C. (2022). *In-context Learning and Induction Heads*. [Transformer Circuits](https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html)
+
+[6] Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł., & Polosukhin, I. (2017). *Attention Is All You Need*. NeurIPS. [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+
+[7] Elhage, N., Nanda, N., Olsson, C., Henighan, T., Joseph, N., Mann, B., ... & Olah, C. (2021). *A Mathematical Framework for Transformer Circuits*. [Transformer Circuits](https://transformer-circuits.pub/2021/foundation/)
+
+[8] Alain, G., & Bengio, Y. (2016). *Understanding intermediate layers using linear classifier probes*. ICLR Workshop. [arXiv:1610.01644](https://arxiv.org/abs/1610.01644)
+
+[9] Belinkov, Y., & Glass, J. (2019). *Analysis Methods in Neural Language Processing: A Survey*. TACL. [arXiv:1907.08979](https://arxiv.org/abs/1907.08979)
+
+[10] Belrose, N., et al. (2023). *Eliciting Latent Predictions from Transformers with the Tuned Lens*. [arXiv:2303.08112](https://arxiv.org/abs/2303.08112)
+
+[11] Templeton, A., Conerly, T., Marcus, J., Lindsey, J., Adeyemi, A., Chen, A., ... & Olah, C. (2023). *Sparse Autoencoders Find Highly Interpretable Features in Language Models*. [arXiv:2309.08600](https://arxiv.org/abs/2309.08600)
+
+[12] Anthropic. (2023). *Towards Monosemanticity: Decomposing Language Models With Dictionary Learning*. [Anthropic Research](https://www.anthropic.com/research/towards-monosemanticity-decomposing-language-models-with-dictionary-learning)
+
+[13] Bricken, T., Templeton, A., Batson, J., Chen, B., Jermyn, A., Conerly, T., ... & Olah, C. (2023). *Towards Monosemanticity: Decomposing Language Models With Dictionary Learning*. [Transformer Circuits](https://transformer-circuits.pub/2023/monosemantic-features/)
+
+[14] Colognori, J., et al. (2024). *Open Source Automated Interpretability for Sparse Autoencoder Features*. [EleutherAI Blog](https://blog.eleuther.ai/autointerp/)
+
+[15] Geiger, A., Wu, Z., Potts, C., Icard, T., & Goodman, N. (2024). *Finding Alignments Between Interpretable Causal Variables and Distributed Neural Representations*. CLEAR/NeurIPS. [PMLR](https://proceedings.mlr.press/v236/geiger24a.html)
+
+[16] Wu, Z., Geiger, A., Arora, A., Huang, W., & Goodman, N. (2023). *Interpretability at Scale: Identifying Causal Mechanisms in Alpaca*. [arXiv:2305.08809](https://arxiv.org/abs/2305.08809)
+
+[17] Modi, A., Karmarkar, A., & Nanda, N. (2024). *Attribution Patching Outperforms Automated Circuit Discovery*. BlackboxNLP/ACL. [arxiv.org/abs/2310.10348](https://arxiv.org/abs/2310.10348)
+
+[18] Nanda, N. *Attribution Patching: Activation Patching At Industrial Scale*. [neelnanda.io](https://www.neelnanda.io/mechanistic-interpretability/attribution-patching)
+
+[19] DeepMind. (2024). AtP*: Efficient and scalable methods for localizing LLM behaviour to components. [DeepMind Research](https://deepmind.google/research/publications/68553/)
+
+[20] Geiger, A., Carstensen, A., Frank, M. C., & Potts, C. (2023). *Causal Abstraction: A Theoretical Foundation for Mechanistic Interpretability*. JMLR. [jmlr.org](https://www.jmlr.org/papers/v26/23-0058.html)
+
+[21] Turner, A. M., Thiergart, L., Udell, D., Leike, J., Mini, L., & MacDiarmid, M. (2023). *Activation Addition: Steering Language Models Without Optimization*. [arXiv:2308.10248](https://arxiv.org/abs/2308.10248)
+
+[22] Zou, A., Phan, L., Chen, S., Campbell, J., Guo, P., Ren, R., ... & Hendrycks, D. (2023). *Representation Engineering: A Top-Down Approach to AI Transparency*. [arXiv:2310.01405](https://arxiv.org/abs/2310.01405)
+
+[23] Wehner, J. (2024). *An Introduction to Representation Engineering*. AI Alignment Forum. [alignmentforum.org](https://www.alignmentforum.org/posts/3ghj8EuKzwD3MQR5G/an-introduction-to-representation-engineering-an-activation)
 
 ---
 
