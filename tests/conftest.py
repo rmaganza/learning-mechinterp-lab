@@ -68,6 +68,7 @@ def fake_model():
     hooked.cfg.d_vocab = D_VOCAB
     hooked.W_U = torch.randn(D_MODEL, D_VOCAB)
     hooked.ln_final = None  # Skip LN for simplicity
+
     def run_with_hooks(input_ids: torch.Tensor, fwd_hooks=None, **kwargs):
         batch, seq_len = input_ids.shape
         return torch.randn(batch, seq_len, D_VOCAB)
@@ -75,6 +76,7 @@ def fake_model():
     hooked.run_with_cache = mock.MagicMock(side_effect=run_with_cache)
     hooked.run_with_hooks = mock.MagicMock(side_effect=run_with_hooks)
     hooked.to_tokens = mock.MagicMock(return_value=torch.randint(0, D_VOCAB, (1, SEQ_LEN)))
+
     # When model(tokens) is called, return real tensor (needed for causal_trace metric_fn)
     def _forward(input_ids):
         return torch.randn(1, input_ids.shape[1], D_VOCAB)

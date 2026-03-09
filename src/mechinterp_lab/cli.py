@@ -90,9 +90,7 @@ def run_experiment(
             layer_indices=config.get("model", {}).get("layer_indices"),
             config=config,
         )
-        console.print(
-            f"[green]Top induction heads:[/green] {result['top_induction_heads'][:5]}"
-        )
+        console.print(f"[green]Top induction heads:[/green] {result['top_induction_heads'][:5]}")
         console.print(f"[green]Target token: {result['induction_target_token']}[/green]")
         if result.get("attention_to_target") and result.get("tokens"):
             plot_dir = dirs["attention"]
@@ -135,8 +133,10 @@ def run_experiment(
             console.print(f"[green]Attention plots saved to {plot_dir}[/green]")
 
     elif experiment == "activation-patching":
-        clean, corrupted, target_token, activation_type, corruption_method, subject, noise_std = _activation_patching_params(
-            config, "The capital of France is", "The capital of Germany is"
+        clean, corrupted, target_token, activation_type, corruption_method, subject, noise_std = (
+            _activation_patching_params(
+                config, "The capital of France is", "The capital of Germany is"
+            )
         )
         result = run_activation_patching_experiment(
             model,
@@ -282,9 +282,15 @@ def patch_activations(
     """Run activation patching between clean and corrupted prompts."""
     config, model_name, _, dirs = _cli_context(config_path, model_name, output_dir)
     exp_dir = dirs["experiments"] / "activation_patching"
-    clean_prompt, corrupted_prompt, target_token, activation_type, corruption_method, subject, noise_std = _activation_patching_params(
-        config, clean_prompt, corrupted_prompt
-    )
+    (
+        clean_prompt,
+        corrupted_prompt,
+        target_token,
+        activation_type,
+        corruption_method,
+        subject,
+        noise_std,
+    ) = _activation_patching_params(config, clean_prompt, corrupted_prompt)
 
     model = load_model(model_name)
     result = run_activation_patching_experiment(

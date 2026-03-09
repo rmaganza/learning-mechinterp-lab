@@ -8,9 +8,7 @@ from mechinterp_lab.probes import TunedLensProbe, logit_lens, probe_layer_logits
 def test_logit_lens(fake_wrapped_model) -> None:
     """Test logit lens (mocked model, no download)."""
     tokens = torch.randint(0, 50257, (1, 5))
-    logits_per_layer, cache = logit_lens(
-        fake_wrapped_model, tokens, layers=[0, 6, 11]
-    )
+    logits_per_layer, cache = logit_lens(fake_wrapped_model, tokens, layers=[0, 6, 11])
 
     assert logits_per_layer.shape[0] == 3
     assert logits_per_layer.shape[1] == 1  # batch

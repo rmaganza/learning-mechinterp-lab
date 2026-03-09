@@ -53,9 +53,7 @@ def test_patch_residual_stream(fake_wrapped_model):
         "mechinterp_lab.patching.activation_patching.get_act_patch_resid_pre"
     ) as mock_patch:
         mock_patch.return_value = torch.randn(12, 6)  # [n_layers, pos]
-        result = patch_residual_stream(
-            fake_wrapped_model, corrupt_tokens, clean_cache, metric_fn
-        )
+        result = patch_residual_stream(fake_wrapped_model, corrupt_tokens, clean_cache, metric_fn)
         assert result.shape == (fake_wrapped_model.config.n_layers,)
 
 
@@ -69,9 +67,7 @@ def test_causal_trace(fake_wrapped_model):
     def metric_fn(logits: torch.Tensor) -> torch.Tensor:
         return logits.max()
 
-    result = causal_trace(
-        fake_wrapped_model, clean_tokens, corrupt_tokens, metric_fn
-    )
+    result = causal_trace(fake_wrapped_model, clean_tokens, corrupt_tokens, metric_fn)
     assert isinstance(result, torch.Tensor)
     assert result.shape[0] == fake_wrapped_model.config.n_layers + 1
 

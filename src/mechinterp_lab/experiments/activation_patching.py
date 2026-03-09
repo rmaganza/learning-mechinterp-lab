@@ -32,7 +32,9 @@ def _find_subject_positions(
             positions.append(i)
     if not positions:
         # Fallback: match by token IDs
-        subject_tokens = model.to_tokens(" " + subject if not subject.startswith(" ") else subject, prepend_bos=False)
+        subject_tokens = model.to_tokens(
+            " " + subject if not subject.startswith(" ") else subject, prepend_bos=False
+        )
         sub_ids = subject_tokens[0].tolist()
         tok_ids = tokens[0].tolist()
         for start in range(len(tok_ids) - len(sub_ids) + 1):
@@ -56,14 +58,18 @@ def _patch_residual_stream_noise_corruption(
     results = torch.zeros(n_layers, device=device)
 
     cdict = getattr(clean_cache, "cache_dict", clean_cache)
-    corruption_hook_name = "blocks.0.hook_resid_pre" if "blocks.0.hook_resid_pre" in cdict else "hook_embed"
+    corruption_hook_name = (
+        "blocks.0.hook_resid_pre" if "blocks.0.hook_resid_pre" in cdict else "hook_embed"
+    )
 
     def make_corruption_hook(positions: list[int], std: float):
         def hook(act: torch.Tensor, **kwargs: Any) -> torch.Tensor:
             out = act.clone()
             for pos in positions:
                 if pos < out.shape[1]:
-                    out[:, pos, :] = out[:, pos, :] + std * torch.randn_like(out[:, pos, :], device=act.device)
+                    out[:, pos, :] = out[:, pos, :] + std * torch.randn_like(
+                        out[:, pos, :], device=act.device
+                    )
             return out
 
         return hook
@@ -168,7 +174,9 @@ def run_activation_patching_experiment(
     else:
         subject_positions = []
 
-    corrupted_tokens = model.to_tokens(corrupted_prompt) if not use_noise_corruption else clean_tokens
+    corrupted_tokens = (
+        model.to_tokens(corrupted_prompt) if not use_noise_corruption else clean_tokens
+    )
 
     if not use_noise_corruption and clean_tokens.shape != corrupted_tokens.shape:
         raise ValueError(
@@ -222,7 +230,9 @@ def run_activation_patching_experiment(
                     model, corrupted_tokens, clean_cache, metric_fn, activation_type="mlp_out"
                 )
             else:
-                layer_effects = patch_residual_stream(model, corrupted_tokens, clean_cache, metric_fn)
+                layer_effects = patch_residual_stream(
+                    model, corrupted_tokens, clean_cache, metric_fn
+                )
         # Average over positions if needed
         if layer_effects.dim() > 1:
             layer_effects = layer_effects.mean(dim=-1)
@@ -362,9 +372,7 @@ def run_multi_fact_patching_experiment(
             if head_imp is not None:
                 imp_np = head_imp if isinstance(head_imp, np.ndarray) else np.array(head_imp)
                 all_head_importance.append(imp_np)
-        per_fact_results.append(
-            {"clean": clean, "corrupted": corrupted, "target": target_token}
-        )
+        per_fact_results.append({"clean": clean, "corrupted": corrupted, "target": target_token})
 
     if activation_type == "resid_pre" and all_layer_effects:
         agg = np.mean(all_layer_effects, axis=0)
@@ -403,5 +411,9 @@ def run_multi_fact_patching_experiment(
         results = {"top_heads": top_heads, "n_facts": len(all_head_importance)}
         with open(output_dir / "multi_fact_results.json", "w") as f:
             json.dump(results, f, indent=2)
-        return {"top_heads": top_heads, "n_facts": len(all_head_importance), "output_dir": output_dir}
+        return {
+            "top_heads": top_heads,
+            "n_facts": len(all_head_importance),
+            "output_dir": output_dir,
+        }
     return {"output_dir": output_dir, "n_facts": 0}
