@@ -39,6 +39,8 @@ seed: 42
 ```python
 import yaml
 
+from mechinterp_lab.models import load_model
+
 with open("configs/activation_patch.yaml") as f:
     config = yaml.safe_load(f)
 
@@ -53,8 +55,8 @@ model = load_model(config["model"]["name"], device=config["model"].get("device")
 # Same model, same device
 uv run python -c "
 from mechinterp_lab.models import load_model
-model = load_model('gpt2-small')
-print(model.cfg.model_name)
+model = load_model('gpt2')
+print(model.name)
 "
 ```
 
@@ -67,11 +69,13 @@ print(model.cfg.model_name)
 ```bash
 uv run python -c "
 from mechinterp_lab.models import load_model
-from mechinterp_lab.hooks import capture_activations
+from mechinterp_lab.hooks import ActivationSpec, HookTarget, capture_activations
 
-model = load_model('gpt2-small')
-acts = capture_activations(model, 'Hello world', layers=[0, 1])
-for k, v in acts.items():
+model = load_model('gpt2')
+tokens = model.model.to_tokens('Hello world')
+spec = ActivationSpec(targets=[HookTarget.RESIDUAL_POST], layers=[0, 1])
+logits, cache = capture_activations(model, tokens, spec=spec)
+for k, v in cache.cache.items():
     print(k, v.shape)
 "
 ```
@@ -101,15 +105,15 @@ Config: `patching.activation_type` = `resid_pre` (layer-level) or `attn_out` (he
 ```bash
 uv run python -c "
 from mechinterp_lab.models import load_model
-from mechinterp_lab.hooks import capture_activations
-from mechinterp_lab.probes import LogitProbe
+from mechinterp_lab.probes import logit_lens
 
-model = load_model('gpt2-small')
-acts = capture_activations(model, 'The capital of France is', names=['blocks.0.hook_resid_post'])
-probe = LogitProbe(model)
-for name, res in acts.items():
-    top = probe.top_k_tokens(res, k=3)
-    print(name, top)
+model = load_model('gpt2')
+tokens = model.model.to_tokens('The capital of France is')
+logits_per_layer, cache = logit_lens(model, tokens, layers=[0, 6, 11])
+# logits_per_layer: [n_layers, batch, d_vocab]
+top_tokens = logits_per_layer.argmax(dim=-1).squeeze(1)  # [n_layers] when batch=1
+for layer_idx, tok_id in enumerate(top_tokens):
+    print(f'Layer {layer_idx}:', model.model.to_string(tok_id.item()))
 "
 ```
 

@@ -8,10 +8,7 @@ from typing import Any
 import torch
 from transformer_lens import HookedTransformer
 
-
-def _get_model(model: Any) -> HookedTransformer:
-    """Extract HookedTransformer from wrapper or return as-is."""
-    return model.model if hasattr(model, "model") else model
+from mechinterp_lab.utils import get_model, resolve_position
 
 
 @dataclass
@@ -43,7 +40,7 @@ def attention_head_analysis(
     Returns:
         HeadAnalysisResult or list of HeadAnalysisResult per head.
     """
-    hooked = _get_model(model)
+    hooked = get_model(model)
     _, cache = hooked.run_with_cache(input_ids)
 
     n_heads = hooked.cfg.n_heads
@@ -112,7 +109,7 @@ def mlp_neuron_analysis(
     Returns:
         MLPNeuronAnalysis or list of analyses.
     """
-    hooked = _get_model(model)
+    hooked = get_model(model)
     _, cache = hooked.run_with_cache(input_ids)
 
     pre = cache[f"blocks.{layer}.mlp.hook_pre"]  # [batch, pos, d_mlp]
@@ -173,13 +170,12 @@ def feature_direction_analysis(
     Returns:
         FeatureDirectionResult with projections and unembed similarities.
     """
-    hooked = _get_model(model)
+    hooked = get_model(model)
     _, cache = hooked.run_with_cache(input_ids)
 
     resid = cache[f"blocks.{layer}.hook_resid_post"]
-    if position < 0:
-        position = resid.shape[1] + position
-    resid = resid[:, position, :]  # [batch, d_model]
+    pos = resolve_position(resid, position)
+    resid = resid[:, pos, :]  # [batch, d_model]
 
     direction = direction / (direction.norm(dim=-1, keepdim=True) + 1e-8)
     projections = (resid * direction).sum(dim=-1)  # [batch]

@@ -4,12 +4,16 @@ Identifies heads that implement the [A][B]...[A] -> [B] pattern: at the second o
 of token A, attend to the token B that followed the first A, to predict B.
 """
 
+from __future__ import annotations
+
 import json
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 from transformer_lens import HookedTransformer
+
+from mechinterp_lab.utils import ensure_output_dir, get_attention_pattern
 
 
 def run_induction_heads_experiment(
@@ -29,8 +33,7 @@ def run_induction_heads_experiment(
     Returns:
         Dict with induction scores per head, top induction heads, attention patterns.
     """
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = ensure_output_dir(output_dir)
 
     tokens = model.to_tokens(prompt)
     token_ids = tokens[0].tolist()
@@ -62,13 +65,11 @@ def run_induction_heads_experiment(
     attention_to_target = {}
 
     for layer in layer_indices:
-        attn_key = f"blocks.{layer}.attn.hook_pattern"
-        if attn_key not in cache:
-            attn_key = f"blocks.{layer}.attn.hook_attn"
-        if attn_key not in cache:
+        pattern_tensor = get_attention_pattern(cache, layer)
+        if pattern_tensor is None:
             continue
 
-        pattern = cache[attn_key].squeeze(0)
+        pattern = pattern_tensor.squeeze(0)
         for head in range(n_heads):
             head_pattern = pattern[head].detach().cpu().numpy()
             if head_pattern.ndim == 3:

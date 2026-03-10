@@ -5,6 +5,7 @@ Returns structured activation tensors keyed by layer and component.
 
 from __future__ import annotations
 
+from collections.abc import ItemsView, KeysView, ValuesView
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
@@ -12,6 +13,8 @@ from typing import Any
 import torch
 from transformer_lens import HookedTransformer
 from transformer_lens.ActivationCache import ActivationCache as TLActivationCache
+
+from mechinterp_lab.utils import get_model
 
 
 class HookTarget(str, Enum):
@@ -58,13 +61,13 @@ class ActivationCache:
     def get(self, key: str, default: Any = None) -> Any:
         return self.cache.get(key, default)
 
-    def keys(self) -> Any:
+    def keys(self) -> KeysView[str]:
         return self.cache.keys()
 
-    def values(self) -> Any:
+    def values(self) -> ValuesView[torch.Tensor]:
         return self.cache.values()
 
-    def items(self) -> Any:
+    def items(self) -> ItemsView[str, torch.Tensor]:
         return self.cache.items()
 
     def residual_pre(self, layer: int) -> torch.Tensor | None:
@@ -156,7 +159,7 @@ def capture_activations(
     Returns:
         (logits, ActivationCache)
     """
-    hooked = model.model if hasattr(model, "model") else model
+    hooked = get_model(model)
 
     if spec is None:
         spec = ActivationSpec(

@@ -1,10 +1,15 @@
 """Logit lens analysis across layers."""
 
+from __future__ import annotations
+
+import json
 from pathlib import Path
 from typing import Any
 
 import torch
 from transformer_lens import HookedTransformer
+
+from mechinterp_lab.utils import ensure_output_dir
 
 
 def run_logit_lens_experiment(
@@ -26,8 +31,7 @@ def run_logit_lens_experiment(
     Returns:
         Dict with per-layer top predictions, when correct answer appears, etc.
     """
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = ensure_output_dir(output_dir)
 
     tokens = model.to_tokens(prompt)
     logits, cache = model.run_with_cache(tokens, remove_batch_dim=True)
@@ -107,8 +111,6 @@ def run_logit_lens_experiment(
     }
 
     with open(output_dir / "logit_lens_results.json", "w") as f:
-        import json
-
         json.dump(
             {
                 "prompt": prompt,

@@ -1,5 +1,7 @@
 """Activation patching for factual recall or induction behavior."""
 
+from __future__ import annotations
+
 import json
 from collections.abc import Callable
 from pathlib import Path
@@ -14,6 +16,7 @@ from transformer_lens.patching import (
 )
 
 from mechinterp_lab.patching import activation_patch, patch_residual_stream
+from mechinterp_lab.utils import ensure_output_dir
 
 
 def _find_subject_positions(
@@ -158,8 +161,7 @@ def run_activation_patching_experiment(
     Returns:
         Dict with patching results, top_heads (attn_out) or top_layers (resid_pre)
     """
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = ensure_output_dir(output_dir)
 
     use_noise_corruption = corruption_method == "noise" and activation_type != "mlp_out"
     clean_tokens = model.to_tokens(clean_prompt)
@@ -344,8 +346,7 @@ def run_multi_fact_patching_experiment(
     Returns:
         Dict with aggregated top_layers or top_heads, per-fact results.
     """
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = ensure_output_dir(output_dir)
 
     all_layer_effects: list[np.ndarray] = []
     all_head_importance: list[np.ndarray] = []

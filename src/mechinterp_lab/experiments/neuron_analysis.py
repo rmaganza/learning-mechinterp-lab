@@ -1,10 +1,15 @@
 """Neuron activation analysis for specific token classes."""
 
+from __future__ import annotations
+
+import json
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 from transformer_lens import HookedTransformer
+
+from mechinterp_lab.utils import ensure_output_dir
 
 
 def run_neuron_analysis_experiment(
@@ -25,8 +30,7 @@ def run_neuron_analysis_experiment(
     Returns:
         Dict with activations by layer, token class stats, and output paths.
     """
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = ensure_output_dir(output_dir)
 
     n_layers = model.cfg.n_layers
     if layer_indices is None:
@@ -81,8 +85,6 @@ def run_neuron_analysis_experiment(
     )
 
     with open(output_dir / "neuron_analysis_results.json", "w") as f:
-        import json
-
         json.dump(results, f, indent=2)
 
     return {

@@ -69,7 +69,8 @@ mechinterp-lab/
 │   ├── patching/          # Activation patching, causal trace
 │   ├── probes/            # Logit lens, tuned lens
 │   ├── analysis/          # Attention, MLP, feature analysis
-│   └── experiments/       # Experiment runners
+│   ├── experiments/       # Experiment runners
+│   └── utils.py           # Shared helpers (get_model, resolve_position, etc.)
 ├── docs/                  # Documentation
 │   ├── METHODS.md         # How each method works (learning reference)
 │   ├── PITFALLS.md        # Common pitfalls

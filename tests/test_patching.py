@@ -4,13 +4,7 @@ import unittest.mock as mock
 
 import torch
 
-
-def _make_fake_cache(n_layers=12, batch=1, seq_len=8, d_model=768):
-    """Build fake activation cache for patching tests."""
-    cache = {}
-    for layer in range(n_layers):
-        cache[f"blocks.{layer}.hook_resid_pre"] = torch.randn(batch, seq_len, d_model)
-    return cache
+from tests.helpers import make_fake_cache
 
 
 def test_activation_patch_resid_pre(fake_wrapped_model):
@@ -18,7 +12,7 @@ def test_activation_patch_resid_pre(fake_wrapped_model):
     from mechinterp_lab.patching import activation_patch
 
     corrupt_tokens = torch.randint(0, 50257, (1, 8))
-    clean_cache = _make_fake_cache(seq_len=8)
+    clean_cache = make_fake_cache(seq_len=8, keys=["hook_resid_pre"])
 
     def metric_fn(logits: torch.Tensor) -> torch.Tensor:
         return logits.max()
@@ -44,7 +38,7 @@ def test_patch_residual_stream(fake_wrapped_model):
     from mechinterp_lab.patching import patch_residual_stream
 
     corrupt_tokens = torch.randint(0, 50257, (1, 6))
-    clean_cache = _make_fake_cache(seq_len=6)
+    clean_cache = make_fake_cache(seq_len=6, keys=["hook_resid_pre"])
 
     def metric_fn(logits: torch.Tensor) -> torch.Tensor:
         return logits.max()

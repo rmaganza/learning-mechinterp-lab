@@ -1,5 +1,7 @@
 """Typer-based CLI for mechanistic interpretability analyses."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 import typer
@@ -15,6 +17,7 @@ from mechinterp_lab.experiments import (
     run_multi_fact_patching_experiment,
     run_neuron_analysis_experiment,
 )
+from mechinterp_lab.utils import get_attention_pattern
 from mechinterp_lab.visualization import (
     plot_attention_heatmap,
     plot_neuron_activation_distribution,
@@ -241,14 +244,12 @@ def analyze_attention(
     tokens = model.to_tokens(prompt)
     _, cache = model.run_with_cache(tokens, remove_batch_dim=True)
 
-    hook_key = f"blocks.{layer}.attn.hook_pattern"
-    if hook_key not in cache:
-        hook_key = f"blocks.{layer}.attn.hook_attn"
-    if hook_key not in cache:
+    pattern_tensor = get_attention_pattern(cache, layer)
+    if pattern_tensor is None:
         console.print(f"[red]Attention not found for layer {layer}[/red]")
         raise typer.Exit(1)
 
-    pattern = cache[hook_key].squeeze(0)
+    pattern = pattern_tensor.squeeze(0)
     token_strs = model.to_str_tokens(prompt, prepend_bos=False)
 
     out_path = attn_dir / f"attention_L{layer}_H{head}.png"

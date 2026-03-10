@@ -11,10 +11,7 @@ import torch
 import torch.nn as nn
 from transformer_lens import HookedTransformer
 
-
-def _get_model(model: Any) -> HookedTransformer:
-    """Extract HookedTransformer from wrapper or return as-is."""
-    return model.model if hasattr(model, "model") else model
+from mechinterp_lab.utils import get_model, resolve_position
 
 
 def logit_lens(
@@ -38,7 +35,7 @@ def logit_lens(
     Returns:
         (logits_per_layer, cache) where logits_per_layer is [n_layers, batch, d_vocab].
     """
-    hooked = _get_model(model)
+    hooked = get_model(model)
     if layers is None:
         layers = list(range(hooked.cfg.n_layers))
 
@@ -55,7 +52,7 @@ def logit_lens(
             key = f"blocks.{layer}.hook_resid_pre"
         resid = cache[key]
         if position is not None:
-            pos = resid.shape[1] + position if position < 0 else position
+            pos = resolve_position(resid, position)
             resid = resid[:, pos : pos + 1, :]  # [batch, 1, d_model]
         # Apply final LN if present
         if ln_final is not None:
@@ -84,12 +81,11 @@ def probe_layer_logits(
     Returns:
         Logits [batch, d_vocab].
     """
-    hooked = _get_model(model)
+    hooked = get_model(model)
     _, cache = hooked.run_with_cache(input_ids)
     resid = cache[f"blocks.{layer}.hook_resid_post"]
-    if position < 0:
-        position = resid.shape[1] + position
-    resid = resid[:, position, :]  # [batch, d_model]
+    pos = resolve_position(resid, position)
+    resid = resid[:, pos, :]  # [batch, d_model]
     if hooked.ln_final is not None:
         resid = hooked.ln_final(resid.unsqueeze(0)).squeeze(0)
     return resid @ hooked.W_U
@@ -132,10 +128,9 @@ def tuned_lens_probe(
     Returns:
         Logits [batch, d_vocab].
     """
-    hooked = _get_model(model)
+    hooked = get_model(model)
     _, cache = hooked.run_with_cache(input_ids)
     resid = cache[f"blocks.{layer}.hook_resid_post"]
-    if position < 0:
-        position = resid.shape[1] + position
-    resid = resid[:, position, :]  # [batch, d_model]
+    pos = resolve_position(resid, position)
+    resid = resid[:, pos, :]  # [batch, d_model]
     return probe(resid)

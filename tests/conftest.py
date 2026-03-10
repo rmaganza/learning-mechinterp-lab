@@ -7,6 +7,7 @@ import pytest
 import torch
 
 from mechinterp_lab.models import ModelConfig, TransformerModel
+from tests.helpers import D_MODEL, D_VOCAB, N_HEADS, N_LAYERS, SEQ_LEN, make_fake_cache
 
 
 def _skip_model_tests() -> bool:
@@ -26,33 +27,13 @@ def small_model():
 
 # --- Mock/fake fixtures for unit tests (no model download) ---
 
-# Default fake dimensions (GPT-2 small-like)
-N_LAYERS = 12
-N_HEADS = 12
-D_MODEL = 768
-D_VOCAB = 50257
 BATCH = 1
-SEQ_LEN = 5
-
-
-def _make_fake_cache(n_layers: int = N_LAYERS, batch: int = BATCH, seq_len: int = SEQ_LEN) -> dict:
-    """Build a fake activation cache dict with correct shapes."""
-    cache = {}
-    for layer in range(n_layers):
-        cache[f"blocks.{layer}.hook_resid_pre"] = torch.randn(batch, seq_len, D_MODEL)
-        cache[f"blocks.{layer}.hook_resid_post"] = torch.randn(batch, seq_len, D_MODEL)
-        cache[f"blocks.{layer}.hook_attn_out"] = torch.randn(batch, seq_len, D_MODEL)
-        cache[f"blocks.{layer}.hook_mlp_out"] = torch.randn(batch, seq_len, D_MODEL * 4)
-    cache["hook_embed"] = torch.randn(batch, seq_len, D_MODEL)
-    cache["hook_pos_embed"] = torch.randn(batch, seq_len, D_MODEL)
-    cache["ln_final.hook_normalized"] = torch.randn(batch, seq_len, D_MODEL)
-    return cache
 
 
 @pytest.fixture
 def fake_model():
     """Fake HookedTransformer-like model for unit tests. No network calls."""
-    cache_dict = _make_fake_cache()
+    cache_dict = make_fake_cache()
 
     def run_with_cache(input_ids: torch.Tensor, **kwargs):
         batch, seq_len = input_ids.shape

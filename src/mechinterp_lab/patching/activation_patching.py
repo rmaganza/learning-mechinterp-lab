@@ -18,10 +18,7 @@ from transformer_lens.patching import (
     get_act_patch_resid_pre,
 )
 
-
-def _get_model(model: Any) -> HookedTransformer:
-    """Extract HookedTransformer from wrapper or return as-is."""
-    return model.model if hasattr(model, "model") else model
+from mechinterp_lab.utils import get_model
 
 
 def _get_tl_cache(cache: Any, model: HookedTransformer | None = None) -> TLActivationCache:
@@ -59,7 +56,7 @@ def activation_patch(
     Returns:
         Tensor of metric values per (layer,) or (layer, head) etc.
     """
-    hooked = _get_model(model)
+    hooked = get_model(model)
     tl_cache = _get_tl_cache(clean_cache, hooked)
 
     if activation_type == "resid_pre":
@@ -141,7 +138,7 @@ def causal_trace(
     Returns:
         Tensor of shape [n_layers + 1] with metric when patching resid_pre at each layer.
     """
-    hooked = _get_model(model)
+    hooked = get_model(model)
     _, clean_cache = hooked.run_with_cache(clean_tokens)
 
     n_layers = hooked.cfg.n_layers
